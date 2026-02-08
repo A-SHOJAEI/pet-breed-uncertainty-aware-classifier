@@ -1,0 +1,52 @@
+# Default configuration for pet breed uncertainty-aware classifier
+
+# Model configuration
+model:
+  backbone: "efficientnet_b0"            # Backbone architecture
+  num_classes: 37                        # Number of pet breed classes
+  dropout_rate: 0.3                      # Dropout rate for uncertainty
+  mc_samples: 20                         # Monte Carlo samples for inference
+  ensemble_size: 1                       # Number of models (1=single MC Dropout model)
+  pretrained: true                       # Use pre-trained weights
+  freeze_backbone: false                 # Whether to freeze backbone weights
+
+# Data configuration
+data:
+  dataset_path: "data/oxford-iiit-pet"   # Dataset root directory
+  image_size: [224, 224]                 # Input image size [height, width]
+  batch_size: 32                         # Training batch size
+  num_workers: 4                         # Number of data loading workers
+  pin_memory: true                       # Pin memory for faster GPU transfer
+  train_split: 0.8                       # Training set proportion
+  val_split: 0.1                         # Validation set proportion
+  test_split: 0.1                        # Test set proportion
+  augmentation_strength: 0.5             # Data augmentation intensity [0.0-1.0]
+
+# Training configuration
+training:
+  epochs: 50                             # Number of training epochs
+  learning_rate: 0.001                   # Initial learning rate
+  weight_decay: 0.0001                   # L2 regularization weight
+  scheduler: "cosine"                    # LR scheduler type [cosine, cosine_warm, step]
+  warmup_epochs: 5                       # Learning rate warmup epochs
+  early_stopping_patience: 10            # Early stopping patience
+  gradient_clip_norm: 1.0                # Gradient clipping norm
+  label_smoothing: 0.1                   # Label smoothing factor
+  mixup_alpha: 0.2                       # Mixup augmentation strength
+  cutmix_alpha: 1.0                      # CutMix augmentation strength
+
+# Logging and experiment tracking
+logging:
+  log_level: "INFO"                      # Logging level
+  mlflow_tracking_uri: "mlruns"          # MLflow tracking URI
+  experiment_name: "pet_breed_uncertainty" # MLflow experiment name
+  log_interval: 10                       # Training log interval (batches)
+  save_top_k: 3                          # Number of best checkpoints to keep
+  monitor: "val_accuracy"                # Metric to monitor for checkpointing
+  monitor_mode: "max"                    # Monitor mode [max, min]
+
+# Runtime configuration
+seed: 42                                 # Random seed for reproducibility
+device: "auto"                          # Device [auto, cpu, cuda, mps]
+mixed_precision: true                    # Enable mixed precision training
+compile_model: false                     # Enable model compilation (PyTorch 2.0+)
