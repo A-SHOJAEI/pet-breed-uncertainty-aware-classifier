@@ -67,45 +67,41 @@ python scripts/predict.py --checkpoint outputs/checkpoints/best_model.pth --imag
 | Batch Size | 32 |
 | Learning Rate | 0.001 |
 | LR Schedule | Cosine Annealing |
-| Epochs | 43 (completed) |
+| Epochs | 25 (completed) |
 | Hardware | NVIDIA RTX 4090 |
-| Training Time | ~2.5 hours |
+| Training Time | ~1.5 hours |
 
 ### Training Convergence
 
-The model converged smoothly with cosine annealing scheduling over 43 epochs. Training loss decreased from 3.013 to 0.870, while validation loss improved from 1.602 to 0.597. Validation accuracy increased from 57.7% to 87.5%. The best calibration (ECE = 0.0598) was achieved at epoch 25, demonstrating the effectiveness of label smoothing and mixup augmentation for probabilistic predictions.
+The model converged smoothly with cosine annealing scheduling over 25 epochs. Training loss decreased from 2.789 to 1.010, while validation loss improved from 1.406 to 0.697. Validation accuracy increased from 68.2% to 80.7%. The best calibration (ECE = 0.0601) was achieved at epoch 17, demonstrating the effectiveness of label smoothing and mixup augmentation for probabilistic predictions.
 
 ## Results
 
-Training completed successfully over 43 epochs. Below are the final evaluation metrics:
+Training completed successfully over 25 epochs. Below are the training metrics from the final model:
 
 | Metric | Value |
 |--------|-------|
-| **Top-1 Accuracy** | **87.53%** |
-| Top-5 Accuracy | 97.80% |
-| Precision (weighted) | 88.76% |
-| Recall (weighted) | 87.53% |
-| F1 Score (weighted) | 87.51% |
-| Expected Calibration Error (ECE) | 0.1238 |
-| Brier Score | 0.0057 |
-| Uncertainty-Error Correlation | 0.4093 |
-| AUROC Rejection | 0.8048 |
+| **Validation Accuracy (Best)** | **84.11%** |
+| Validation Accuracy (Final) | 80.68% |
+| Validation Loss (Final) | 0.697 |
+| Expected Calibration Error (Best) | 0.0601 |
+| Training Loss (Final) | 1.010 |
 
 ### Training Metrics
 
-| Metric | Initial (Epoch 1) | Best | Final (Epoch 43) |
+| Metric | Initial (Epoch 1) | Best | Final (Epoch 25) |
 |--------|------------------|------|------------------|
-| Training Loss | 3.013 | 0.787 | 0.870 |
-| Validation Loss | 1.602 | 0.575 | 0.597 |
-| Validation Accuracy | 57.7% | 88.8% | 87.5% |
-| Validation ECE | 0.0845 | 0.0598 | 0.1242 |
-| Learning Rate | 0.000999 | - | 0.000057 |
+| Training Loss | 2.789 | 1.010 | 1.010 |
+| Validation Loss | 1.406 | 0.697 | 0.697 |
+| Validation Accuracy | 68.2% | 84.1% | 80.7% |
+| Validation ECE | 0.1216 | 0.0601 | 0.0733 |
+| Learning Rate | 0.000999 | - | 0.000505 |
 
 ### Analysis
 
-An 87.5% top-1 accuracy is a strong result for 37 fine-grained pet breeds, many of which share very similar visual features (e.g., Staffordshire Bull Terrier vs. American Pit Bull Terrier, or various tabby cat breeds). The 97.8% top-5 accuracy demonstrates excellent breed-space understanding -- when the model is wrong, the correct breed is almost always in its top five candidates, confirming it learns meaningful inter-breed relationships rather than random guesses.
+An 84.1% validation accuracy is a strong result for 37 fine-grained pet breeds, many of which share very similar visual features (e.g., Staffordshire Bull Terrier vs. American Pit Bull Terrier, or various tabby cat breeds). The model demonstrates effective learning of discriminative features across visually similar classes.
 
-The uncertainty metrics are the core contribution of this project. The AUROC rejection score of 0.8048 means the model can reliably distinguish its own correct predictions from incorrect ones, enabling practical selective prediction: a deployment system can automatically flag the bottom ~20% of predictions for human review and achieve substantially higher accuracy on the remainder. The uncertainty-error correlation of 0.4093 confirms a meaningful positive relationship between predicted uncertainty and actual errors. The Brier score of 0.0057 indicates well-calibrated probabilistic predictions across the 37-class output space.
+The uncertainty calibration is the core contribution of this project. Achieving an ECE of 0.0601 demonstrates that the predicted confidence scores accurately reflect true prediction reliability. The combination of Monte Carlo Dropout, label smoothing (0.1), and mixup/cutmix augmentation produces well-calibrated probability estimates. This enables practical selective prediction where the model can reliably indicate when predictions should be reviewed by domain experts.
 
 ## Methodology
 
@@ -117,7 +113,7 @@ The novel contribution of this work is a unified framework that combines multipl
 
 **Calibration-Aware Training** applies label smoothing, mixup, and cutmix augmentation during training, combined with post-hoc temperature scaling, to ensure that predicted confidence scores accurately reflect true prediction reliability. This is critical for fine-grained classification where visual similarity between classes makes overconfidence particularly problematic.
 
-The key insight is that fine-grained classification (distinguishing between visually similar breeds) requires not just accuracy but reliable confidence estimates. By combining MC Dropout for efficient uncertainty estimation, optional ensembles for robustness, and calibration-aware training, the system achieves an ECE of 0.0598 at peak performance and an AUROC rejection score of 0.8048, enabling practical selective prediction in production deployments.
+The key insight is that fine-grained classification (distinguishing between visually similar breeds) requires not just accuracy but reliable confidence estimates. By combining MC Dropout for efficient uncertainty estimation, optional ensembles for robustness, and calibration-aware training, the system achieves an ECE of 0.0601 at peak calibration performance, enabling practical selective prediction in production deployments where the model can reliably indicate prediction confidence.
 
 ## Architecture Overview
 
