@@ -197,3 +197,15 @@ secrets.yaml
 
 # Jupyter notebook outputs (keep notebooks but not outputs)
 *_checkpoint.ipynb
+
+# Auto-added by publisher
+# Training artifacts (auto-added by publisher)
+*.bin
+*.safetensors
+data/*.arrow
+data/*.parquet
+data/*.h5
+data/*.hdf5
+data/raw/
+data/processed/
+.venv/

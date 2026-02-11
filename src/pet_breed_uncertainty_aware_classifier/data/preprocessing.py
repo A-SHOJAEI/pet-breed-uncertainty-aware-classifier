@@ -44,11 +44,10 @@ def get_transforms(
     if not isinstance(is_training, bool):
         raise ValueError("is_training must be a boolean")
     base_transforms = [
-        A.Resize(height=image_size[0], width=image_size[1], always_apply=True),
+        A.Resize(height=image_size[0], width=image_size[1]),
         A.Normalize(
             mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-            always_apply=True
+            std=[0.229, 0.224, 0.225]
         ),
         ToTensorV2()
     ]
@@ -73,7 +72,7 @@ def get_transforms(
             p=0.7
         ),
         A.OneOf([
-            A.GaussNoise(var_limit=(10.0 * augmentation_strength, 50.0 * augmentation_strength)),
+            A.GaussNoise(std_range=(0.04 * augmentation_strength, 0.2 * augmentation_strength)),
             A.GaussianBlur(blur_limit=(1, 3)),
             A.MotionBlur(blur_limit=3),
         ], p=0.4),
@@ -99,22 +98,20 @@ def get_transforms(
         ),
         A.RandomGamma(gamma_limit=(80, 120), p=0.2),
         A.CoarseDropout(
-            max_holes=8,
-            max_height=int(image_size[0] * 0.1 * augmentation_strength),
-            max_width=int(image_size[1] * 0.1 * augmentation_strength),
-            min_holes=1,
-            fill_value=0,
+            num_holes_range=(1, 8),
+            hole_height_range=(1, int(image_size[0] * 0.1 * augmentation_strength)),
+            hole_width_range=(1, int(image_size[1] * 0.1 * augmentation_strength)),
+            fill=0,
             p=0.3
         ),
     ]
 
     # Add base transforms at the end
     train_transforms.extend([
-        A.Resize(height=image_size[0], width=image_size[1], always_apply=True),
+        A.Resize(height=image_size[0], width=image_size[1]),
         A.Normalize(
             mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225],
-            always_apply=True
+            std=[0.229, 0.224, 0.225]
         ),
         ToTensorV2()
     ])
