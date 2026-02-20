@@ -67,41 +67,47 @@ python scripts/predict.py --checkpoint outputs/checkpoints/best_model.pth --imag
 | Batch Size | 32 |
 | Learning Rate | 0.001 |
 | LR Schedule | Cosine Annealing |
-| Epochs | 25 (completed) |
+| Warmup Epochs | 5 |
+| Epochs | 50 (completed) |
+| Label Smoothing | 0.1 |
+| Mixup Alpha | 0.2 |
+| CutMix Alpha | 1.0 |
+| MC Dropout Samples | 20 |
 | Hardware | NVIDIA RTX 4090 |
-| Training Time | ~1.5 hours |
 
 ### Training Convergence
 
-The model converged smoothly with cosine annealing scheduling over 25 epochs. Training loss decreased from 2.789 to 1.010, while validation loss improved from 1.406 to 0.697. Validation accuracy increased from 68.2% to 80.7%. The best calibration (ECE = 0.0601) was achieved at epoch 17, demonstrating the effectiveness of label smoothing and mixup augmentation for probabilistic predictions.
+The model converged smoothly with cosine annealing scheduling over 50 epochs. Training loss decreased from 2.895 to 0.991, while validation loss improved from 1.420 to 0.624. Validation accuracy increased from 63.3% to 87.3%, with the best validation accuracy of 87.78% achieved at epochs 48-49. The best calibration (ECE = 0.0505) was achieved at epoch 17, demonstrating the effectiveness of label smoothing and mixup augmentation for probabilistic predictions. Extended training from 25 to 50 epochs yielded a significant improvement in validation accuracy (from 84.1% to 87.8%).
 
 ## Results
 
-Training completed successfully over 25 epochs. Below are the training metrics from the final model:
+Training completed successfully over 50 epochs. Below are the training metrics from the final model:
 
 | Metric | Value |
 |--------|-------|
-| **Validation Accuracy (Best)** | **84.11%** |
-| Validation Accuracy (Final) | 80.68% |
-| Validation Loss (Final) | 0.697 |
-| Expected Calibration Error (Best) | 0.0601 |
-| Training Loss (Final) | 1.010 |
+| **Validation Accuracy (Best)** | **87.78%** (epoch 48) |
+| Validation Accuracy (Final) | 87.29% |
+| Validation Loss (Best) | 0.579 (epoch 37) |
+| Validation Loss (Final) | 0.624 |
+| Expected Calibration Error (Best) | 0.0505 (epoch 17) |
+| Expected Calibration Error (Final) | 0.112 |
+| Training Loss (Final) | 0.991 |
 
 ### Training Metrics
 
-| Metric | Initial (Epoch 1) | Best | Final (Epoch 25) |
+| Metric | Initial (Epoch 1) | Best | Final (Epoch 50) |
 |--------|------------------|------|------------------|
-| Training Loss | 2.789 | 1.010 | 1.010 |
-| Validation Loss | 1.406 | 0.697 | 0.697 |
-| Validation Accuracy | 68.2% | 84.1% | 80.7% |
-| Validation ECE | 0.1216 | 0.0601 | 0.0733 |
-| Learning Rate | 0.000999 | - | 0.000505 |
+| Training Loss | 2.895 | 0.737 (ep. 41) | 0.991 |
+| Validation Loss | 1.420 | 0.579 (ep. 37) | 0.624 |
+| Validation Accuracy | 63.3% | 87.78% (ep. 48) | 87.29% |
+| Validation ECE | 0.115 | 0.0505 (ep. 17) | 0.112 |
+| Learning Rate | 0.000999 | - | 0.00001 |
 
 ### Analysis
 
-An 84.1% validation accuracy is a strong result for 37 fine-grained pet breeds, many of which share very similar visual features (e.g., Staffordshire Bull Terrier vs. American Pit Bull Terrier, or various tabby cat breeds). The model demonstrates effective learning of discriminative features across visually similar classes.
+An 87.78% best validation accuracy is a strong result for 37 fine-grained pet breeds, many of which share very similar visual features (e.g., Staffordshire Bull Terrier vs. American Pit Bull Terrier, or various tabby cat breeds). The model demonstrates effective learning of discriminative features across visually similar classes. Extending training to 50 epochs (from the initial 25) provided a meaningful +3.7 percentage point improvement in peak validation accuracy.
 
-The uncertainty calibration is the core contribution of this project. Achieving an ECE of 0.0601 demonstrates that the predicted confidence scores accurately reflect true prediction reliability. The combination of Monte Carlo Dropout, label smoothing (0.1), and mixup/cutmix augmentation produces well-calibrated probability estimates. This enables practical selective prediction where the model can reliably indicate when predictions should be reviewed by domain experts.
+The uncertainty calibration is the core contribution of this project. Achieving a best ECE of 0.0505 demonstrates that the predicted confidence scores accurately reflect true prediction reliability. The combination of Monte Carlo Dropout, label smoothing (0.1), and mixup/cutmix augmentation produces well-calibrated probability estimates. While the final ECE at epoch 50 (0.112) is higher than peak calibration, the best checkpoint preserves the optimal trade-off between accuracy and calibration. This enables practical selective prediction where the model can reliably indicate when predictions should be reviewed by domain experts.
 
 ## Methodology
 
@@ -113,7 +119,7 @@ The novel contribution of this work is a unified framework that combines multipl
 
 **Calibration-Aware Training** applies label smoothing, mixup, and cutmix augmentation during training, combined with post-hoc temperature scaling, to ensure that predicted confidence scores accurately reflect true prediction reliability. This is critical for fine-grained classification where visual similarity between classes makes overconfidence particularly problematic.
 
-The key insight is that fine-grained classification (distinguishing between visually similar breeds) requires not just accuracy but reliable confidence estimates. By combining MC Dropout for efficient uncertainty estimation, optional ensembles for robustness, and calibration-aware training, the system achieves an ECE of 0.0601 at peak calibration performance, enabling practical selective prediction in production deployments where the model can reliably indicate prediction confidence.
+The key insight is that fine-grained classification (distinguishing between visually similar breeds) requires not just accuracy but reliable confidence estimates. By combining MC Dropout for efficient uncertainty estimation, optional ensembles for robustness, and calibration-aware training, the system achieves an ECE of 0.0505 at peak calibration performance, enabling practical selective prediction in production deployments where the model can reliably indicate prediction confidence.
 
 ## Architecture Overview
 

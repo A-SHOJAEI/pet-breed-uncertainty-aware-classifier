@@ -158,7 +158,6 @@ logs/
 checkpoints/
 /models/
 weights/
-results/
 plots/
 figures/
 
